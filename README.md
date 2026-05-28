@@ -38,15 +38,12 @@ pkg install python -y
 pkg install ffmpeg -y
 
 # 4. Menginstal Git tool (Untuk mengunduh source code dari GitHub)
-pkg install git -y
-
-# 5. Mengkloning repositori project ini ke dalam lokal Termux
 git clone https://github.com
 
-# 6. Masuk ke dalam direktori/folder project yang baru diunduh
+# 5. Masuk ke dalam direktori/folder project yang baru diunduh
 cd social-media-downloader
 
-# 7. Menginstal seluruh library Python eksternal (yt-dlp & instaloader) dengan flag wajib Termux
+# 6. Menginstal seluruh library Python eksternal (yt-dlp & instaloader) dengan flag wajib Termux
 pip install -r requirements.txt --break-system-packages
 ```
 
@@ -54,10 +51,10 @@ pip install -r requirements.txt --break-system-packages
 
 ## 🛠️ Cara Penggunaan
 
-### Langkah 1: Inisialisasi
-Jalankan script pertama kali untuk membuat file antrean otomatis:
+### Langkah 1: Inisialisasi & Instalasi Library
+Pastikan semua library terpasang terlebih dahulu, kemudian jalankan script pertama kali untuk membuat file antrean otomatis:
 ```bash
-python main.py
+pip install -r requirements.txt --break-system-packages && python main.py
 ```
 Script akan membuat file `links.txt` secara otomatis di folder **Download** internal HP lu.
 
