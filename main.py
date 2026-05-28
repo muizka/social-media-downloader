@@ -38,26 +38,22 @@ def ambil_daftar_link():
     return links
 
 def download_youtube_tiktok(url):
-    print(f"\n[*] Memproses (yt-dlp) -> {url}")
-    FFMPEG_PATH = "/data/data/com.termux/files/usr/bin/ffmpeg"
-    
+    print(f"\n[*] Memproses (yt-dlp Direct MP4) -> {url}")
     ydl_opts = {
         'outtmpl': os.path.join(BASE_STORAGE, '%(title)s.%(ext)s'),
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
-        'merge_output_format': 'mp4',
+        'format': 'best[ext=mp4]/best', 
         'writeinfojson': False,
         'writedescription': False,
         'writeannotations': False,
         'writethumbnail': False,
-        'ffmpeg_location': FFMPEG_PATH,
         'quiet': False
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        print("[+] BERHASIL! Video dan Audio sudah dijahit menjadi satu file .mp4")
+        print("[+] BERHASIL! Video utuh berekstensi .mp4 siap ditonton.")
     except Exception as e:
-        print(f"[-] Gagal/FFmpeg Error: {e}")
+        print(f"[-] Gagal mengunduh: {e}")
 
 def download_instagram(url):
     print(f"\n[*] Memproses (Instagram) -> {url}")
@@ -81,7 +77,7 @@ def download_instagram(url):
         print(f"[-] Gagal mengunduh Instagram: {e}")
 
 def main():
-    print("=== AUTO MEDIA DOWNLOADER (FINAL FORCED MERGE) ===")
+    print("=== AUTO MEDIA DOWNLOADER (FINAL DIRECT VERSION) ===")
     inisialisasi_folder()
     daftar_link = ambil_daftar_link()
     if not daftar_link:
