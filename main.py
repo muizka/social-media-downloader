@@ -29,7 +29,7 @@ def inisialisasi_folder():
         print(f"[*] Membuat file konfigurasi di: {LINKS_FILE}")
         with open(LINKS_FILE, "w", encoding="utf-8") as f:
             f.write("# Taruh URL/Link Video di bawah ini (Satu link per baris)\n")
-            f.write("# Contoh:\n# https://www.tiktok.com/@xyz/video/1234567\n")
+            f.write("# Contoh:\n# https://www.youtube.com/watch?v=xxxxxx\n")
         print("[+] File links.txt berhasil dibuat! Silakan isi link dulu lalu jalankan ulang.")
         sys.exit(0)
 
@@ -45,24 +45,36 @@ def ambil_daftar_link():
     return links
 
 def download_youtube_tiktok(url):
-    """Download YouTube atau TikTok MURNI VIDEO TANPA TEKS SAMPAH"""
+    """Download YouTube/TikTok dan PAKSA JAHIT AUDIO VIDEO via FFmpeg"""
     print(f"\n[*] Memproses (yt-dlp) -> {url}")
+    
     ydl_opts = {
+        # Lokasi output langsung ke folder Download internal
         'outtmpl': os.path.join(BASE_STORAGE, '%(title)s.%(ext)s'),
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        
+        # Ambil video MP4 terbaik dan audio M4A terbaik, lalu gabungkan
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
+        
+        # Paksa FFmpeg melakukan penggabungan menjadi format tunggal .mp4
         'merge_output_format': 'mp4',
+        
+        # Bersihkan file sampah teks/json/thumbnail
         'writeinfojson': False,
         'writedescription': False,
         'writeannotations': False,
         'writethumbnail': False,
+        
+        # Beri tahu yt-dlp lokasi binary FFmpeg secara tegas di Termux
+        'ffmpeg_location': '/data/data/com.termux/files/usr/bin/ffmpeg',
         'quiet': False
     }
+    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        print("[+] Berhasil diunduh ke folder Download!")
+        print("[+] BERHASIL! Video dan Audio sudah dijahit menjadi satu file .mp4")
     except Exception as e:
-        print(f"[-] Gagal mengunduh: {e}")
+        print(f"[-] Gagal mengunduh/menggabungkan: {e}")
 
 def download_instagram(url):
     """Download Instagram MURNI VIDEO MP4 TANPA FILE TEXT & JPG SAMPAH"""
@@ -70,7 +82,7 @@ def download_instagram(url):
     
     match = re.search(r"/(?:p|reel|tv)/([A-Za-z0-9_-]+)", url)
     if not match:
-        print("[-] URL Instagram tidak valid atau shortcode tidak ditemukan!")
+        print("[-] URL Instagram tidak valid!")
         return
     
     shortcode = match.group(1)
@@ -83,17 +95,15 @@ def download_instagram(url):
             output_file = os.path.join(IG_STORAGE, f"{shortcode}.mp4")
             
             print("[*] Mengunduh file video mp4 langsung...")
-            # bypass download_post bawaan instaloader, ambil videonya doang via urllib
             urllib.request.urlretrieve(video_url, output_file)
-            
-            print(f"[+] BERHASIL! Video disimpan di folder IG_Downloads sebagai: {shortcode}.mp4")
+            print(f"[+] BERHASIL! Video Instagram disimpan di folder IG_Downloads.")
         else:
             print("[-] Konten ini bukan video!")
     except Exception as e:
         print(f"[-] Gagal mengunduh Instagram: {e}")
 
 def main():
-    print("=== AUTO MEDIA DOWNLOADER (FIXED CLEAN VERSION) ===")
+    print("=== AUTO MEDIA DOWNLOADER (FIXED FFMEG MERGE) ===")
     inisialisasi_folder()
     daftar_link = ambil_daftar_link()
     
