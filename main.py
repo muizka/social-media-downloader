@@ -1,155 +1,121 @@
 import os
 import re
 import sys
-import yt_dlp
-import instaloader
 
-# Konfigurasi Path Penyimpanan Internal HP (Folder Download)
-STORAGE_INTERNAL = "/storage/emulated/0/Download"
-CONFIG_FILE = "links.txt"
-PATH_TARGET_TXT = os.path.join(STORAGE_INTERNAL, CONFIG_FILE)
+# Cek & Install library otomatis jika belum ada (Biar gak ModuleNotFoundError)
+try:
+    import instaloader
+    import yt_dlp
+except ImportError:
+    print("[!] Library kurang. Menginstal otomatis...")
+    os.system("pip install yt-dlp instaloader --break-system-packages")
+    import instaloader
+    import yt_dlp
 
-def bersihkan_layar():
-    os.system('cls' if os.name == 'nt' else 'clear')
+# Path Penyimpanan Folder Download Internal HP Android
+STORAGE_PATH = "/sdcard/Download"
+LINKS_FILE = os.path.join(STORAGE_PATH, "links.txt")
 
-def cek_akses_penyimpanan():
-    """Memeriksa apakah Termux memiliki izin akses ke penyimpanan internal HP."""
-    if not os.path.exists(STORAGE_INTERNAL):
-        print("\n" + "="*50)
-        print("❌ ERROR: TIDAK DAPAT MENGAKSES PENYIMPANAN INTERNAL!")
-        print("="*50)
-        print("Solusi:")
-        print("1. Jalankan perintah 'termux-setup-storage' di Termux.")
-        print("2. Berikan izin akses file/media untuk aplikasi Termux.")
-        print("="*50 + "\n")
-        return False
-    return True
-
-def inisialisasi_file_txt():
-    """Membuat file links.txt otomatis di folder Download jika belum ada."""
-    if not os.path.exists(PATH_TARGET_TXT):
-        try:
-            with open(PATH_TARGET_TXT, "w", encoding="utf-8") as f:
-                f.write("# ========================================================\n")
-                f.write("# RIXZ ENGINEERING - SOCIAL MEDIA DOWNLOADER\n")
-                f.write("# ========================================================\n")
-                f.write("# Masukkan URL di bawah ini (Satu link per baris):\n")
-                f.write("# Contoh:\n")
-                f.write("# https://www.youtube.com/watch?v=xxxxxx\n")
-                f.write("# https://vt.tiktok.com/xxxxxx/\n")
-                f.write("# https://www.instagram.com/reel/xxxxxx/\n")
-                f.write("# ========================================================\n\n")
-            print(f"✅ Berhasil membuat file template di: {PATH_TARGET_TXT}")
-            print("💡 Silakan isi file tersebut dengan link video sebelum menjalankan kembali.")
-        except Exception as e:
-            print(f"❌ Gagal membuat file template: {e}")
+def inisialisasi_file():
+    """Membuat file links.txt otomatis jika belum ada di folder Download"""
+    if not os.path.exists(LINKS_FILE):
+        print(f"[*] Membuat file konfigurasi di: {LINKS_FILE}")
+        with open(LINKS_FILE, "w", encoding="utf-8") as f:
+            f.write("# Taruh URL/Link Video di bawah ini (Satu link per baris)\n")
+            f.write("# Contoh:\n# https://www.tiktok.com/@xyz/video/1234567\n")
+        print("[+] File links.txt berhasil dibuat! Silakan isi link dulu lalu jalankan ulang.")
+        sys.exit(0)
 
 def ambil_daftar_link():
-    """Membaca dan memfilter link dari file links.txt."""
-    if not os.path.exists(PATH_TARGET_TXT):
-        return []
-        
-    with open(PATH_TARGET_TXT, "r", encoding="utf-8") as f:
-        baris = f.readlines()
-        
-    # Ambil baris yang bukan comment (#) dan bukan baris kosong
-    links = [b.strip() for b in baris if b.strip() and not b.strip().startswith('#')]
+    """Membaca list link dari file links.txt"""
+    links = []
+    with open(LINKS_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#"):
+                links.append(line)
     return links
 
-def download_yt_tiktok(url):
-    """Mengunduh video dari YouTube atau TikTok menggunakan yt-dlp."""
+def download_youtube_tiktok(url):
+    """Download YouTube atau TikTok MURNI VIDEO TANPA TEKS SAMPAH"""
+    print(f"\n[*] Memproses (yt-dlp) -> {url}")
     ydl_opts = {
-        # Menyimpan langsung ke folder Download internal HP
-        'outtmpl': os.path.join(STORAGE_INTERNAL, '%(title)s.%(ext)s'),
-        'format': 'bestvideo+bestaudio/best',
+        'outtmpl': os.path.join(STORAGE_PATH, '%(title)s.%(ext)s'),
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best', # Paksa gabung video+audio mp4
         'merge_output_format': 'mp4',
-        'quiet': False,
-        'no_warnings': True,
+        # MATIKAN SEMUA FITUR DOWNLOAD TEKS/METADATA SAMPAH
+        'writeinfojson': False,
+        'writedescription': False,
+        'writeannotations': False,
+        'writethumbnail': False,
+        'quiet': False
     }
     try:
-        print(f"\n[+] Memproses YouTube/TikTok: {url}")
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        print("✨ Sukses Terunduh!")
-        return True
+        print("[+] Berhasil diunduh ke folder Download!")
     except Exception as e:
-        print(f"❌ Gagal Mengunduh YT/TikTok: {e}")
-        return False
+        print(f"[-] Gagal mengunduh: {e}")
 
 def download_instagram(url):
-    """Mengunduh post/reel dari Instagram menggunakan instaloader."""
-    # Menyimpan hasil ke dalam folder khusus di dalam folder Download internal
+    """Download Instagram MURNI VIDEO TANPA FILE _UTC.txt ATAU .json"""
+    print(f"\n[*] Memproses (Instaloader Instagram) -> {url}")
+    
+    # Ambil Shortcode dari URL Instagram
+    match = re.search(r"/(?:p|reel|tv)/([A-Za-z0-9_-]+)", url)
+    if not match:
+        print("[-] URL Instagram tidak valid atau shortcode tidak ditemukan!")
+        return
+    
+    shortcode = match.group(1)
+    
+    # Setel Instaloader super ketat agar TIDAK BIKIN FILE SAMPAH
     L = instaloader.Instaloader(
-        download_videos=True,
-        download_comments=False,
-        save_metadata=False,
-        dirname_pattern=os.path.join(STORAGE_INTERNAL, 'IG_Downloads')
+        dirname_pattern=STORAGE_PATH,        # Langsung lempar ke folder Download
+        download_geotags=False,              # Gak usah download lokasi
+        download_comments=False,             # Gak usah download komentar
+        save_metadata_json=False,            # MATIKAN FILE .json
+        download_pictures=False              # Gak usah download foto/thumbnail tambahan
     )
+    # MATIKAN FILE CAPTION (_UTC.txt)
+    L.post_metadata_txt_pattern = "" 
+
     try:
-        print(f"\n[+] Memproses Instagram: {url}")
-        # Ekstrak shortcode dari URL
-        match = re.search(r"/(p|reels|reel)/([a-zA-Z0-9__-]+)", url)
-        if not match:
-            print("❌ URL Instagram tidak valid atau struktur tautan salah.")
-            return False
-            
-        shortcode = match.group(2)
         post = instaloader.Post.from_shortcode(L.context, shortcode)
-        
-        print(f"[+] Mengunduh konten dari kreator: @{post.owner_profile.username}")
-        L.download_post(post, target=shortcode)
-        print("✨ Sukses Terunduh (Disimpan di folder Download/IG_Downloads)!")
-        return True
+        if post.is_video:
+            L.download_post(post, target=STORAGE_PATH)
+            print("[+] Video Instagram berhasil diunduh ke folder Download!")
+            
+            # Bersihkan sisa-sisa file gambar/txt liar jika instaloader bandel meloloskannya
+            for file in os.listdir(STORAGE_PATH):
+                if file.startswith(shortcode) and not file.endswith(".mp4"):
+                    try:
+                        os.remove(os.path.join(STORAGE_PATH, file))
+                    except:
+                        pass
+        else:
+            print("[-] Konten bukan video!")
     except Exception as e:
-        print(f"❌ Gagal Mengunduh Instagram: {e}")
-        return False
+        print(f"[-] Gagal mengunduh Instagram: {e}")
 
 def main():
-    bersihkan_layar()
-    print("="*60)
-    print("        RIX-Z ENGINEERING | MULTI-DOWNLOADER BOT        ")
-    print("        Platform: YouTube, TikTok, & Instagram          ")
-    print("="*60)
+    print("=== AUTO MEDIA DOWNLOADER (TERMUX CLEAN VERSION) ===")
+    inisialisasi_file()
+    daftar_link = ambil_daftar_link()
     
-    if not cek_akses_penyimpanan():
-        sys.exit(1)
-        
-    inisialisasi_file_txt()
-    links = ambil_daftar_link()
+    if not daftar_link:
+        print(f"[-] File links.txt kosong! Isi link video dulu di folder Download/links.txt")
+        return
+
+    print(f"[+] Menemukan {len(daftar_link)} antrean video.")
     
-    if not links:
-        print(f"\nℹ️ File '{CONFIG_FILE}' di folder Download masih kosong.")
-        print("   Silakan paste link video terlebih dahulu di file tersebut.")
-        print("="*60 + "\n")
-        sys.exit(0)
-        
-    total_link = len(links)
-    print(f"\n🚀 Menemukan {total_link} tautan antrean di {CONFIG_FILE}.\n")
-    
-    sukses = 0
-    gagal = 0
-    
-    for indeks, url in enumerate(links, 1):
-        print(f"\n[{indeks}/{total_link}] " + "-"*45)
-        
-        # Validasi platform berdasarkan string URL
-        if "instagram.com" in url:
-            hasil = download_instagram(url)
-        elif "youtube.com" in url or "youtu.be" in url or "tiktok.com" in url:
-            hasil = download_yt_tiktok(url)
+    for link in daftar_link:
+        if "instagram.com" in link:
+            download_instagram(link)
         else:
-            print(f"⚠️ URL tidak didukung atau salah ketik: {url}")
-            hasil = False
+            download_youtube_tiktok(link)
             
-        if hasil:
-            sukses += 1
-        else:
-            gagal += 1
-            
-    print("\n" + "="*60)
-    print("🎉 SEMUA PROSES DOWNLOAD SELESAI!")
-    print(f"📊 Ringkasan: Berhasil [{sukses}] | Gagal [{gagal}]")
-    print("="*60 + "\n")
+    print("\n[====== SEMUA PROSES DOWNLOAD SELESAI ======]")
 
 if __name__ == "__main__":
     main()
