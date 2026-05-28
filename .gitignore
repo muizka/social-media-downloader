@@ -1,34 +1,30 @@
-# Cache Python
+# Python Runtime Cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Environment & OS
-.DS_Store
+# Environment & Virtual Env
 .env
-.ipynb_checkpoints/
+.DS_Store
 vmd/
 
-# Mengabaikan file media hasil download (Lokal PC/Termux)
+# Filter Hasil Unduhan Lokal (Jangan Masuk GitHub)
 *.mp4
 *.mkv
 *.webm
 *.mp3
-*.avi
-
-# Mengabaikan gambar, thumbnail, dan cover
 *.jpg
 *.jpeg
 *.png
 *.webp
 
-# Mengabaikan file teks sampah (Caption Instagram & Log yt-dlp)
+# Filter Metadata Tambahan
 *UTC.txt
 *.json
 *.description
 *.part
 *.ytdl
 
-# Mengabaikan file konfigurasi link privat lu di lokal
+# Jalur Konfigurasi Privat
 links.txt
