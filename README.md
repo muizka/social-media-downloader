@@ -4,30 +4,39 @@
 
 ### Pilihan A: One-Click (Salin Semua)
 ```bash
-termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install python ffmpeg git -y && git clone [https://github.com/muizka/social-media-downloader.git](https://github.com/muizka/social-media-downloader.git) && cd social-media-downloader && pip install --upgrade pip && pip install -r requirements.txt
+termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install python ffmpeg git -y && git clone https://github.com/muizka/social-media-downloader.git && cd social-media-downloader && pip install --upgrade pip && pip install -r requirements.txt
 ```
-Pilihan B: Step-by-Step
+
+### Pilihan B: Step-by-Step
 ```bash
 termux-setup-storage
 pkg update -y && pkg upgrade -y
 pkg install python -y
 pkg install ffmpeg -y
 pkg install git -y
-git clone [https://github.com/muizka/social-media-downloader.git](https://github.com/muizka/social-media-downloader.git)
+git clone https://github.com/muizka/social-media-downloader.git
 cd social-media-downloader
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
-Penggunaan
-Inisialisasi awal / Eksekusi Download
+
+---
+
+## 🛠️ Penggunaan
+
+### Inisialisasi awal / Eksekusi Download
 ```bash
 python main.py
 ```
-Jalankan Ulang di Lain Waktu
+
+### Jalankan Ulang di Lain Waktu
 ```bash
 cd ~/social-media-downloader && python main.py
 ```
-Troubleshooting (Perbaikan Instan)
+
+---
+
+## 🛠️ Troubleshooting (Perbaikan Instan)
 ```bash
 # Perbaiki izin memori
 termux-setup-storage
