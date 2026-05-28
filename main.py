@@ -29,7 +29,6 @@ def inisialisasi_folder():
         print(f"[*] Membuat file konfigurasi di: {LINKS_FILE}")
         with open(LINKS_FILE, "w", encoding="utf-8") as f:
             f.write("# Taruh URL/Link Video di bawah ini (Satu link per baris)\n")
-            f.write("# Contoh:\n# https://www.youtube.com/watch?v=xxxxxx\n")
         print("[+] File links.txt berhasil dibuat! Silakan isi link dulu lalu jalankan ulang.")
         sys.exit(0)
 
@@ -45,27 +44,29 @@ def ambil_daftar_link():
     return links
 
 def download_youtube_tiktok(url):
-    """Download YouTube/TikTok dan PAKSA JAHIT AUDIO VIDEO via FFmpeg"""
+    """Download YouTube/TikTok dan PAKSA JAHIT AUDIO VIDEO via FFmpeg Absolut"""
     print(f"\n[*] Memproses (yt-dlp) -> {url}")
     
+    # JALUR SYMLINK LENGKAP FFMEG DI TERMUX ANDROID (WAJIB COCOK)
+    FFMPEG_PATH = "/data/data/com.com.termux/files/usr/bin/ffmpeg"
+    # Jalur alternatif umum jika path di atas berbeda di perangkat lu
+    if not os.path.exists(FFMPEG_PATH):
+        FFMPEG_PATH = "/data/data/com.termux/files/usr/bin/ffmpeg"
+
     ydl_opts = {
-        # Lokasi output langsung ke folder Download internal
         'outtmpl': os.path.join(BASE_STORAGE, '%(title)s.%(ext)s'),
-        
-        # Ambil video MP4 terbaik dan audio M4A terbaik, lalu gabungkan
+        # Paksa ambil format MP4/M4A terbaik
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best',
-        
-        # Paksa FFmpeg melakukan penggabungan menjadi format tunggal .mp4
         'merge_output_format': 'mp4',
         
-        # Bersihkan file sampah teks/json/thumbnail
+        # Blokir file sampah metadata teks/json
         'writeinfojson': False,
         'writedescription': False,
         'writeannotations': False,
         'writethumbnail': False,
         
-        # Beri tahu yt-dlp lokasi binary FFmpeg secara tegas di Termux
-        'ffmpeg_location': '/data/data/com.termux/files/usr/bin/ffmpeg',
+        # --- KUNCI UTAMA DISINI: NODONG FFMPG SECARA PAKSA ---
+        'ffmpeg_location': FFMPEG_PATH,
         'quiet': False
     }
     
@@ -97,13 +98,18 @@ def download_instagram(url):
             print("[*] Mengunduh file video mp4 langsung...")
             urllib.request.urlretrieve(video_url, output_file)
             print(f"[+] BERHASIL! Video Instagram disimpan di folder IG_Downloads.")
+            
+            # Sapu bersih file sampah jika instaloader meloloskan file liar
+            for file in os.listdir(IG_STORAGE):
+                if file.startswith(shortcode) and not file.endswith(".mp4"):
+                    os.remove(os.path.join(IG_STORAGE, file))
         else:
             print("[-] Konten ini bukan video!")
     except Exception as e:
         print(f"[-] Gagal mengunduh Instagram: {e}")
 
 def main():
-    print("=== AUTO MEDIA DOWNLOADER (FIXED FFMEG MERGE) ===")
+    print("=== AUTO MEDIA DOWNLOADER (FINAL FORCED MERGE) ===")
     inisialisasi_folder()
     daftar_link = ambil_daftar_link()
     
