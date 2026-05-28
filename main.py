@@ -5,7 +5,7 @@ import shutil
 import time
 
 # ========================================================
-# 🛡️ PENGAMANAN DEPENDENSI OTOMATIS (TRY-EXCEPT LAYER 1)
+# 🛡️ LAYER 1: PENGAMANAN DEPENDENSI OTOMATIS
 # ========================================================
 try:
     import yt_dlp
@@ -13,7 +13,6 @@ try:
 except (ImportError, ModuleNotFoundError) as library_error:
     print(f"[*] Komponen sistem hilang ({library_error}). Menginisialisasi perbaikan...")
     try:
-        # Mencoba memasang otomatis jika user belum install lewat pip
         os.system("pip install yt-dlp instaloader --break-system-packages")
         import yt_dlp
         import instaloader
@@ -23,13 +22,13 @@ except (ImportError, ModuleNotFoundError) as library_error:
         print("[-] Silakan jalankan manual: pip install yt-dlp instaloader --break-system-packages")
         sys.exit(1)
 
-# Konfigurasi Lingkungan Penyimpanan Internal Android (Infinix Dedicated)
+# Konfigurasi Jalur Penyimpanan Internal Android
 BASE_STORAGE = "/sdcard/Download"
 LINKS_FILE = os.path.join(BASE_STORAGE, "links.txt")
 IG_STORAGE = os.path.join(BASE_STORAGE, "IG_Downloads")
 
 def inisialisasi_sistem():
-    """Memvalidasi dan menyiapkan direktori lingkungan eksekusi (TRY-EXCEPT LAYER 2)"""
+    """Memvalidasi dan menyiapkan direktori lingkungan eksekusi (LAYER 2)"""
     try:
         if not os.path.exists(BASE_STORAGE):
             os.makedirs(BASE_STORAGE, exist_ok=True)
@@ -63,7 +62,7 @@ def inisialisasi_sistem():
         sys.exit(1)
 
 def ambil_antrean_links():
-    """Membaca daftar URL dari links.txt dengan penanganan file hilang (TRY-EXCEPT LAYER 3)"""
+    """Membaca daftar URL dari links.txt dengan aman (LAYER 3)"""
     antrean = []
     try:
         if os.path.exists(LINKS_FILE):
@@ -81,7 +80,7 @@ def ambil_antrean_links():
         return []
 
 def download_yt_tt(url):
-    """Download YT/TikTok menggunakan single-stream MP4 dengan perlindungan penuh (TRY-EXCEPT LAYER 4)"""
+    """Download YT/TikTok format single-stream MP4 (LAYER 4)"""
     print(f"\n[*] Memproses URL (yt-dlp Engine) -> {url}")
     
     ydl_opts = {
@@ -105,13 +104,12 @@ def download_yt_tt(url):
         print(f"[-] Terjadi kesalahan tak terduga pada engine yt-dlp: {unexpected_err}")
 
 def download_ig(url):
-    """Download Instagram Reel dengan penamaan Username + Shortcode yang simpel & Hard Clean (TRY-EXCEPT LAYER 5)"""
+    """Download Instagram Reel dengan format nama akun + deskripsi bersih (LAYER 5)"""
     print(f"\n[*] Memproses URL (Instaloader Engine) -> {url}")
     
-    # Validasi struktur Regex URL
     match = re.search(r"/(?:p|reel|tv)/([A-Za-z0-9_-]+)", url)
     if not match:
-        print("[-] STRUKTUR LINK ERROR: URL Instagram tidak valid atau salah format shortcode!")
+        print("[-] STRUKTUR LINK ERROR: URL Instagram tidak valid!")
         return
         
     shortcode = match.group(1)
@@ -129,44 +127,59 @@ def download_ig(url):
         post = instaloader.Post.from_shortcode(bot.context, shortcode)
         
         if post.is_video:
-            nama_simpel = f"{post.owner_username}_{shortcode}"
-            print(f"[*] Target terdeteksi. Mengunduh video dengan nama: {nama_simpel}.mp4")
+            username = post.owner_username
+            caption = post.caption if post.caption else ""
+            
+            # 🛡️ FILTER SANITASI: Bersihkan emoji dan simbol terlarang dari caption
+            caption_bersih = re.sub(r'[^a-zA-Z0-9\s]', '', caption)
+            # Ambil maksimal 5 kata pertama agar penamaan file tidak kepanjangan
+            kata_caption = caption_bersih.split()
+            potongan_deskripsi = "_".join(kata_caption[:5]) if kata_caption else "Video"
+            
+            # Penggabungan format nama baru: username_potongan_caption
+            nama_simpel = f"{username}_{potongan_deskripsi}"
+            
+            print(f"[+] Pemilik konten terdeteksi: @{username}")
+            print(f"[*] Menyiapkan nama file baru: {nama_simpel}.mp4")
             
             try:
                 bot.download_post(post, target=IG_STORAGE)
             except Exception as download_fault:
-                print(f"[-] Gagal melakukan stream unduhan dari server: {download_fault}")
+                print(f"[-] Gagal melakukan stream unduhan: {download_fault}")
                 return
             
-            # PROSES PENATAAN & SAPU BERSIH FILE SAMPAH (METADATA CLEANER LOGIC)
-            print("[*] Memulai pembersihan berkas metadata...")
-            time.sleep(1)  # Jeda aman untuk meyakinkan file selesai ditulis sistem
+            # 🧹 SISTEM HARD-CLEAN & RENAME OTOMATIS
+            print("[*] Mengorganisir berkas dan menghapus file metadata...")
+            time.sleep(1) # Jeda aman memastikan sistem operasi selesai menulis berkas
             
             try:
+                target_baru = os.path.join(IG_STORAGE, f"{nama_simpel}.mp4")
+                
                 for item in os.listdir(IG_STORAGE):
                     item_path = os.path.join(IG_STORAGE, item)
                     if os.path.isfile(item_path):
-                        # Amankan file mp4 hasil download, ganti nama ke format simpel
+                        # Cari file video bawaan asli instaloader (mengandung shortcode dan berakhiran UTC.mp4)
                         if shortcode in item and item.endswith(".mp4") and "UTC" in item:
-                            target_baru = os.path.join(IG_STORAGE, f"{nama_simpel}.mp4")
+                            # Proteksi jika nama file sudah ada agar tidak saling menimpa
                             if os.path.exists(target_baru):
-                                os.remove(target_baru)  # Hapus file lama jika duplikat
+                                target_baru = os.path.join(IG_STORAGE, f"{nama_simpel}_{int(time.time())}.mp4")
                             os.rename(item_path, target_baru)
-                        # Hapus paksa file pendukung bawaan instaloader (.jpg, .json, .txt)
+                        # Hapus paksa semua file liar non-MP4 (.jpg, .txt, .json)
                         elif not item.endswith(".mp4"):
                             os.remove(item_path)
-                print(f"[+] SUKSES: Hanya menyisakan video murni -> {nama_simpel}.mp4")
+                            
+                print(f"[+] SUKSES: Video murni tersimpan sebagai -> {os.path.basename(target_baru)}")
             except OSError as os_cleanup_error:
-                print(f"[-] Peringatan: Gagal membersihkan beberapa file metadata: {os_cleanup_error}")
+                print(f"[-] Peringatan saat merapikan nama file: {os_cleanup_error}")
         else:
             print("[-] FORMAT DITOLAK: Konten target bukan berformat Video / Reel.")
             
     except instaloader.exceptions.ConnectionException as conn_err:
-        print(f"[-] KONEKSI ERROR: Gagal terhubung ke Instagram, periksa jaringan/kuota Anda: {conn_err}")
+        print(f"[-] KONEKSI ERROR: Gagal terhubung ke Instagram, periksa jaringan: {conn_err}")
     except instaloader.exceptions.BadCredentialsException:
-        print("[-] AKSES DITOLAK: Akun bersifat privat atau membutuhkan login session.")
+        print("[-] AKSES DITOLAK: Akun bersifat privat atau butuh session login.")
     except Exception as general_ig_error:
-        print(f"[-] Engine Instaloader mendeteksi error: {general_ig_error}")
+        print(f"[-] Engine Mendeteksi Error: {general_ig_error}")
 
 def main():
     print("========================================================")
@@ -193,7 +206,7 @@ def main():
             sys.exit(0)
         except Exception as loop_error:
             print(f"[-] Terjadi kesalahan fatal saat memproses link {url}: {loop_error}")
-            continue  # Lanjut memproses antrean berikutnya jika ada yang error tunggal
+            continue 
             
     print("\n[=================== PROSES SELESAI ===================]")
 
