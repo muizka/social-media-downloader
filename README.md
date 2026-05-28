@@ -1,6 +1,4 @@
-Mantap, ini draf final `README.md` yang sudah dirapikan total sesuai dengan format yang kamu inginkan. Semua link yang ganda otomatis dibersihkan agar tampilannya bersih dan profesional saat di-upload ke GitHub.
-
-### 📄 Isi Lengkap File `README.md`
+Kamu bisa salin seluruh isi di bawah ini untuk menggantikan semua teks yang ada di file `README.md` GitHub-mu sekarang:
 
 ```markdown
 # Auto Media Downloader (Termux Android Dedicated)
