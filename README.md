@@ -1,51 +1,9 @@
-# Auto Media Downloader - Command Only
+# Social Media Downloader - Termux Dedicated
 
-## ⚙️ Setup & Instalasi
+Script otomatisasi berbasis Python untuk mengunduh media dari YouTube, TikTok, dan Instagram langsung ke penyimpanan internal Android.
 
-### Pilihan A: One-Click (Salin Semua)
+## ⚙️ Perintah Instalasi (One-Click Setup)
+
+Jalankan rangkaian perintah berikut pada terminal Termux:
 ```bash
-termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install tur-repo -y && pkg update -y && pkg install python ffmpeg git -y && git clone https://github.com/muizka/social-media-downloader.git && cd social-media-downloader && pip install -r requirements.txt --break-system-packages
-```
-
-### Pilihan B: Step-by-Step
-```bash
-termux-setup-storage
-pkg update -y && pkg upgrade -y
-pkg install tur-repo -y && pkg update -y
-pkg install python ffmpeg git -y
-git clone https://github.com/muizka/social-media-downloader.git
-cd social-media-downloader && pip install -r requirements.txt --break-system-packages
-```
-
----
-
-## 🛠️ Penggunaan
-
-### Inisialisasi awal / Eksekusi Download
-```bash
-python main.py
-```
-
-### Jalankan Ulang di Lain Waktu
-```bash
-cd ~/social-media-downloader && python main.py
-```
-
----
-
-## 🛠️ Troubleshooting (Perbaikan Instan)
-
-### Solusi Video & Audio YouTube Terpisah
-```bash
-pkg install ffmpeg --reinstall -y && pip install --upgrade yt-dlp --break-system-packages
-```
-
-### Solusi ModuleNotFoundError
-```bash
-pip install yt-dlp instaloader --break-system-packages
-```
-
-### Solusi Izin Akses Folder Ditolak
-```bash
-termux-setup-storage
-```
+termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install python ffmpeg git -y && git clone [https://github.com/muizka/social-media-downloader.git](https://github.com/muizka/social-media-downloader.git) && cd social-media-downloader && pip install -r requirements.txt --break-system-packages
