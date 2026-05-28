@@ -1,16 +1,34 @@
+# Cache Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Environment & OS
 .DS_Store
 .env
+.ipynb_checkpoints/
 vmd/
 
-# Mengabaikan file video/foto jika kamu melakukan uji coba di PC/Termux lokal
+# Mengabaikan file media hasil download (Lokal PC/Termux)
 *.mp4
 *.mkv
 *.webm
 *.mp3
+*.avi
+
+# Mengabaikan gambar, thumbnail, dan cover
 *.jpg
 *.jpeg
 *.png
+*.webp
+
+# Mengabaikan file teks sampah (Caption Instagram & Log yt-dlp)
+*UTC.txt
+*.json
+*.description
+*.part
+*.ytdl
+
+# Mengabaikan file konfigurasi link privat lu di lokal
+links.txt
