@@ -12,7 +12,6 @@ except (ImportError, ModuleNotFoundError):
     import yt_dlp
     import instaloader
 
-# Konfigurasi Direktori Utama Penyimpanan Android
 BASE_STORAGE = "/sdcard/Download"
 LINKS_FILE = os.path.join(BASE_STORAGE, "links.txt")
 IG_STORAGE = os.path.join(BASE_STORAGE, "IG_Downloads")
@@ -20,7 +19,6 @@ TT_STORAGE = os.path.join(BASE_STORAGE, "TikTok_Downloads")
 YT_STORAGE = os.path.join(BASE_STORAGE, "YouTube_Downloads")
 
 def inisialisasi_sistem():
-    """Membuat folder-folder penyimpanan jika belum ada di internal HP"""
     try:
         if not os.path.exists(BASE_STORAGE): os.makedirs(BASE_STORAGE, exist_ok=True)
         if not os.path.exists(IG_STORAGE): os.makedirs(IG_STORAGE, exist_ok=True)
@@ -32,7 +30,7 @@ def inisialisasi_sistem():
         
     if not os.path.exists(LINKS_FILE):
         with open(LINKS_FILE, "w", encoding="utf-8") as f:
-            f.write("# RIXZ ENGINEERING - SOCIAL MEDIA DOWNLOADER\n# Masukkan URL di bawah ini (Satu link per baris):\n\n")
+            f.write("# RIXZ ENGINEERING - SOCIAL MEDIA DOWNLOADER\n# Masukkan URL di bawah ini:\n\n")
         print(f"[+] File antrean kosong berhasil dibuat di: {LINKS_FILE}")
         sys.exit(0)
 
@@ -46,7 +44,6 @@ def ambil_antrean_links():
     return antrean
 
 def download_yt_tt(url):
-    """Engine yt-dlp pintar untuk memisahkan folder TikTok dan YouTube"""
     if "tiktok.com" in url:
         print(f"\n[*] Memproses URL (TikTok Engine) -> {url}")
         target_folder = TT_STORAGE
@@ -68,7 +65,6 @@ def download_yt_tt(url):
         print(f"[-] Error saat mengunduh dari {platform_name}: {e}")
 
 def download_ig(url):
-    """Engine Instaloader dengan pengubah nama kustom berbasis Username + Caption"""
     print(f"\n[*] Memproses URL (Instagram) -> {url}")
     match = re.search(r"/(?:p|reel|tv)/([A-Za-z0-9_-]+)", url)
     if not match:
@@ -90,7 +86,6 @@ def download_ig(url):
             username = post.owner_username
             caption = post.caption if post.caption else ""
             
-            # Sanitasi nama agar aman dari karakter ilegal di Android
             caption_bersih = re.sub(r'[^a-zA-Z0-9\s]', '', caption)
             kata_caption = caption_bersih.split()
             potongan_judul = "_".join(kata_caption[:5]) if kata_caption else "Video"
@@ -102,13 +97,15 @@ def download_ig(url):
             bot.download_post(post, target=IG_STORAGE)
             
             print("[*] Mengganti nama file & menghapus file sampah...")
-            time.sleep(2) # Jeda penulisan file OS
+            time.sleep(2)
             
             file_direname = False
+            # Scan file berdasarkan pola penamaan default UTC Instaloader
             for item in os.listdir(IG_STORAGE):
                 item_path = os.path.join(IG_STORAGE, item)
                 
-                if shortcode in item and item.endswith(".mp4"):
+                # Sikat semua file video yang berakhiran _UTC.mp4
+                if item.endswith("_UTC.mp4"):
                     target_path = os.path.join(IG_STORAGE, f"{nama_baru_simpel}.mp4")
                     if os.path.exists(target_path):
                         target_path = os.path.join(IG_STORAGE, f"{nama_baru_simpel}_{int(time.time())}.mp4")
@@ -117,11 +114,12 @@ def download_ig(url):
                     file_direname = True
                     print(f"[+] BERHASIL DIUBAH -> {os.path.basename(target_path)}")
                 
+                # Bersihkan otomatis file gambar sampah (.jpg, .json, dll)
                 elif os.path.isfile(item_path) and not item.endswith(".mp4"):
                     os.remove(item_path)
             
             if not file_direname:
-                print("[-] Peringatan: File video mentah tidak ditemukan untuk di-rename.")
+                print("[-] Peringatan: File video mentah _UTC.mp4 tidak ditemukan untuk di-rename.")
         else:
             print("[-] Skip: Konten bukan video.")
     except Exception as e:
