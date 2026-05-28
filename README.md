@@ -67,24 +67,52 @@ Script akan membuat file `links.txt` secara otomatis di folder **Download** inte
 ### Langkah 3: Eksekusi Download
 Kembali ke Termux dan jalankan perintah:
 ```bash
-python main.py
+pip install -r requirements.txt --break-system-packages && python main.py
 ```
 Video akan otomatis terdownload dan muncul di Galeri HP lu.
 
 ---
 
 ## 🔄 Perintah Penggunaan Harian
-Jika ingin mendownload lagi di lain waktu, cukup jalankan:
+Jika ingin mendownload lagi di lain waktu, cukup jalankan rangkaian perintah ini agar library tetap aman dan skrip langsung berjalan:
 ```bash
-cd ~/social-media-downloader && python main.py
+cd ~/social-media-downloader && pip install -r requirements.txt --break-system-packages && python main.py
 ```
 
 ---
 
 ## 🛠️ Troubleshooting (Solusi Masalah)
+
+* **Video YouTube Terpisah Antara Gambar & Audio (Tidak Menyatu):**
+  Ah, kalau hasil download video YouTube resolusi tinggi (1080p ke atas) hasilnya terpisah antara video dan audio (nggak menyatu), itu tandanya **FFmpeg belum terinstal sempurna** atau **Termux belum bisa membaca path FFmpeg** di HP lu.
+  
+  Library `yt-dlp` yang lu pakai di dalam script Python itu butuh FFmpeg sebagai "tukang jahit" otomatis untuk menyatukan berkas video (*stream* gambar HD) dan berkas audio (*stream* suara) setelah proses download selesai.
+
+  **Cara Beresinnya (Eksekusi di Termux):**
+  Gak perlu bongkar kode `main.py` lu, cukup jalankan dua perintah perbaikan ini secara berurutan di Termux:
+
+  **Langkah 1: Instal ulang FFmpeg sampai bersih**
+  ```bash
+  pkg install ffmpeg --reinstall -y
+  ```
+  *(Tunggu sampai proses instalasi selesai 100% dan pastikan tidak ada error di terminal).*
+
+  **Langkah 2: Update juga library `yt-dlp` lu ke versi terbaru**
+  ```bash
+  pip install --upgrade yt-dlp --break-system-packages
+  ```
+
+  **🚀 Cara Tes Hasilnya**
+  Setelah dua langkah di atas selesai, silakan jalankan kembali script downloader lu:
+  ```bash
+  pip install -r requirements.txt --break-system-packages && python main.py
+  ```
+  Jika FFmpeg sudah terinstal dengan benar, lu bakal melihat proses tambahan di terminal setelah download selesai berupa tulisan **`[Merger] Merging formats into "mp4"`**. Itu tandanya video dan audionya sudah sukses dijahit jadi satu file utuh yang siap lu tonton di galeri!
+
 * **Error: Installing pip is forbidden:** Python Termux melarang upgrade pip. Lewati perintah upgrade pip dan langsung gunakan flag `--break-system-packages`.
+
 * **ModuleNotFoundError (instaloader/yt-dlp):** Jalankan perintah `pip install yt-dlp instaloader --break-system-packages` untuk memaksa instalasi library.
-* **Video Tanpa Suara:** Pastikan FFmpeg sudah terinstall (`pkg install ffmpeg -y`).
+
 * **Gagal Baca File:** Jalankan `termux-setup-storage` ulang untuk memastikan izin akses memori aktif.
 
 ---
