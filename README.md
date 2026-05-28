@@ -6,7 +6,7 @@ Script otomatisasi berbasis Python untuk mengunduh media dari YouTube, TikTok, d
 
 Jalankan rangkaian perintah berikut pada terminal Termux:
 ```bash
-pkg update -y && pkg upgrade -y && pkg install python python-pip git ffmpeg -y && git clone https://github.com && cd ~/social-media-downloader && pip install -r requirements.txt --break-system-packages && termux-setup-storage && python main.py
+pkg update -y && pkg upgrade -y && pkg install python python-pip git ffmpeg -y && git clone https://github.com/muizka/social-media-downloader.git && cd ~/social-media-downloader && pip install -r requirements.txt --break-system-packages && termux-setup-storage && python main.py
 ```
 
 ## 📋 Tata Cara Penggunaan File links.txt
