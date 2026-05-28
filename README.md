@@ -4,7 +4,7 @@
 
 ### Pilihan A: One-Click (Salin Semua)
 ```bash
-termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install python ffmpeg git -y && git clone https://github.com/muizka/social-media-downloader.git && cd social-media-downloader && pip install --upgrade pip && pip install -r requirements.txt
+termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install python ffmpeg git -y && git clone https://github.com && cd social-media-downloader && pip install -r requirements.txt --break-system-packages
 ```
 
 ### Pilihan B: Step-by-Step
@@ -14,10 +14,9 @@ pkg update -y && pkg upgrade -y
 pkg install python -y
 pkg install ffmpeg -y
 pkg install git -y
-git clone https://github.com/muizka/social-media-downloader.git
+git clone https://github.com
 cd social-media-downloader
-pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements.txt --break-system-packages
 ```
 
 ---
@@ -45,5 +44,5 @@ termux-setup-storage
 pkg install ffmpeg --reinstall -y
 
 # Update library downloader ke versi terbaru
-pip install --upgrade yt-dlp instaloader
+pip install --upgrade yt-dlp instaloader --break-system-packages
 ```
