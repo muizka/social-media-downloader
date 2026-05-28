@@ -1,1 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.env
+vmd/
 
+# Mengabaikan file video/foto jika kamu melakukan uji coba di PC/Termux lokal
+*.mp4
+*.mkv
+*.webm
+*.mp3
+*.jpg
+*.jpeg
+*.png
